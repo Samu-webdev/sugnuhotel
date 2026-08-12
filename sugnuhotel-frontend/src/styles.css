@@ -1,0 +1,111 @@
+/* ==========================================================================
+   SugnuHotel — palette "Teranga"
+   Inspirée des couchers de soleil sur la Petite Côte, du Lac Rose et des
+   façades colorées de l'île de Gorée.
+   ========================================================================== */
+:root {
+  --sh-terracotta: #d85a30;    /* corail/terracotta — couleur principale, boutons, accents */
+  --sh-terracotta-dark: #a8431f;
+  --sh-terracotta-light: #f5c4b3;
+  --sh-teal: #0f6e56;          /* vert océan/lagune — deuxième accent */
+  --sh-teal-light: #d7ece5;
+  --sh-amber: #e09f3e;         /* ambre/coucher de soleil — mise en avant, badges */
+  --sh-amber-light: #fbeacb;
+  --sh-rose: #d4537e;          /* rose Lac Rose — touches suite/premium */
+  --sh-sable: #fbf3e7;         /* fond crème "sable" */
+  --sh-nuit: #2c1e14;          /* brun profond conservé pour le texte fort / navbar */
+}
+
+body {
+  background-color: var(--sh-sable);
+  color: var(--sh-nuit);
+}
+
+/* --- Navigation --- */
+.navbar-brand { font-weight: 700; letter-spacing: .5px; }
+
+/* --- Boutons : on remplace le noir "btn-dark" par défaut par le corail --- */
+.btn-dark, .btn-brand {
+  background-color: var(--sh-terracotta);
+  border-color: var(--sh-terracotta);
+}
+.btn-dark:hover, .btn-brand:hover {
+  background-color: var(--sh-terracotta-dark);
+  border-color: var(--sh-terracotta-dark);
+}
+.btn-outline-dark {
+  color: var(--sh-terracotta-dark);
+  border-color: var(--sh-terracotta);
+}
+.btn-outline-dark:hover {
+  background-color: var(--sh-terracotta);
+  border-color: var(--sh-terracotta);
+}
+
+a { color: var(--sh-terracotta-dark); }
+
+/* --- Statuts de réservation : palette vive mais garde la lisibilité --- */
+.badge-status-pending    { background-color: var(--sh-amber); color: #4a2e05; }
+.badge-status-confirmed  { background-color: var(--sh-teal); color: #fff; }
+.badge-status-checked_in { background-color: #3b8f5e; color: #fff; }
+.badge-status-checked_out{ background-color: #6c757d; color: #fff; }
+.badge-status-cancelled  { background-color: var(--sh-rose); color: #fff; }
+
+/* --- Cartes chambres --- */
+.room-card img { height: 190px; object-fit: cover; }
+.room-card { transition: transform .15s ease, box-shadow .15s ease; }
+.room-card:hover { transform: translateY(-4px); box-shadow: 0 10px 24px rgba(44,30,20,.12); }
+
+/* --- Section héro dynamique de la page d'accueil --- */
+.sh-hero {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 420px;
+  display: flex;
+  align-items: center;
+  background-size: cover;
+  background-position: center;
+  isolation: isolate;
+}
+.sh-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(44,30,20,.35) 0%, rgba(44,30,20,.75) 100%);
+  z-index: 0;
+}
+.sh-hero > * { position: relative; z-index: 1; }
+
+.sh-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.35);
+  color: #fff;
+  border-radius: 999px;
+  padding: 4px 14px;
+  font-size: .8rem;
+}
+
+.sh-highlight-icon {
+  width: 46px; height: 46px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sh-terracotta-light);
+  color: var(--sh-terracotta-dark);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.sh-gallery img {
+  height: 220px;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  transition: transform .2s ease;
+}
+.sh-gallery a:hover img { transform: scale(1.03); }
+
+footer.sh-footer { background-color: var(--sh-nuit) !important; }
