@@ -17,13 +17,8 @@ COPY . .
 # Installe les dépendances PHP du projet (équivalent du "composer install" qu'on tape en local)
 RUN composer install --no-dev --optimize-autoloader
 
-# Render fournit son propre numéro de port via la variable $PORT au démarrage du conteneur.
-# Cette commande prépare la config, crée le lien de stockage, applique les migrations,
-# INSÈRE LES DONNÉES DE DÉMO (--seed), puis démarre le serveur.
-# Le seeder a été rendu idempotent (firstOrCreate) : relancer --seed à chaque déploiement
-# ne créera jamais de doublons ni d'erreur, même si les comptes existent déjà.
-CMD php artisan config:clear && \
-    php artisan storage:link && \
-    php artisan migrate --force && \
-    php artisan db:seed --force && \
-    php artisan serve --host 0.0.0.0 --port ${PORT:-10000}
+# IMPORTANT : tout sur UNE SEULE LIGNE, volontairement. Une commande CMD répartie sur
+# plusieurs lignes avec des "\" de continuation devient fragile dès que le fichier est
+# édité/copié depuis Windows (les fins de ligne CRLF cassent la continuation "\", et Docker
+# finit par interpréter "&&" comme un argument au lieu d'un séparateur de commandes).
+CMD php artisan config:clear && php artisan storage:link && php artisan migrate --force && php artisan db:seed --force && php artisan serve --host 0.0.0.0 --port ${PORT:-10000}
