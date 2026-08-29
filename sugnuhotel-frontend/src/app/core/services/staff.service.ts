@@ -72,6 +72,11 @@ export class StaffService {
     return this.http.delete<{ data: Reservation }>(`${this.base}/reservations/${id}`);
   }
 
+  // Suppression définitive (irréversible), réservée aux réservations déjà annulées
+  deletePermanently(id: number): Observable<{ message: string }> {
+    return this.http.delete<{ message: string }>(`${this.base}/reservations/${id}/force`);
+  }
+
   checkIn(id: number): Observable<{ data: Reservation }> {
     return this.http.patch<{ data: Reservation }>(`${this.base}/reservations/${id}/check-in`, {});
   }

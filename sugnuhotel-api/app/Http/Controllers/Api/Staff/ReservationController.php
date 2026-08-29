@@ -133,6 +133,31 @@ class ReservationController extends Controller
         return new ReservationResource($reservation->fresh());
     }
 
+    /**
+     * Suppression DÉFINITIVE d'une réservation déjà annulée (bouton "Supprimer"
+     * réservé au personnel dans la liste des réservations). Contrairement à destroy()
+     * ci-dessus (qui fait une annulation "douce" en changeant juste le statut),
+     * ici la ligne est réellement effacée de la base de données — irréversible.
+     * On limite volontairement cette action aux réservations déjà annulées : on ne
+     * permet jamais d'effacer l'historique d'une réservation encore active.
+     */
+    public function forceDelete(Reservation $reservation)
+    {
+        if ($reservation->status !== 'cancelled') {
+            return response()->json([
+                'message' => "Seule une réservation déjà annulée peut être supprimée définitivement.",
+            ], 422);
+        }
+
+        // On détache d'abord les services liés (table pivot reservation_services)
+        // avant de supprimer la réservation elle-même, pour rester cohérent même si
+        // la contrainte de clé étrangère n'est pas en cascade.
+        $reservation->services()->detach();
+        $reservation->delete();
+
+        return response()->json(['message' => 'Réservation supprimée définitivement.']);
+    }
+
     public function checkIn(Reservation $reservation)
     {
         $reservation->update(['status' => 'checked_in']);

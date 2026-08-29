@@ -15,6 +15,8 @@ import { Reservation } from '../../../core/models/reservation.model';
         <span class="badge badge-status-{{ r.status }}">{{ r.status }}</span>
       </h4>
 
+      <div class="alert alert-danger py-2" *ngIf="errorMessage">{{ errorMessage }}</div>
+
       <div class="card shadow-sm mb-3">
         <div class="card-body">
           <p><strong>Client :</strong> {{ r.user?.name }} ({{ r.user?.email }})</p>
@@ -35,14 +37,20 @@ import { Reservation } from '../../../core/models/reservation.model';
         <button class="btn btn-success" *ngIf="r.status === 'confirmed'" (click)="checkIn()">Check-in</button>
         <button class="btn btn-secondary" *ngIf="r.status === 'checked_in'" (click)="checkOut()">Check-out</button>
         <button class="btn btn-outline-danger" *ngIf="r.status !== 'cancelled' && r.status !== 'checked_out'" (click)="cancel()">Annuler</button>
+
+        <!-- Suppression définitive : uniquement quand la réservation est déjà annulée -->
+        <button class="btn btn-danger" *ngIf="r.status === 'cancelled'" (click)="deletePermanently()">
+          <i class="fa-solid fa-trash me-1"></i> Supprimer définitivement
+        </button>
       </div>
     </div>
   `,
 })
 export class StaffReservationDetailComponent implements OnInit {
   reservation?: Reservation;
+  errorMessage = '';
 
-  constructor(private route: ActivatedRoute, private staffService: StaffService) {}
+  constructor(private route: ActivatedRoute, private router: Router, private staffService: StaffService) {}
 
   ngOnInit(): void {
     this.load();
@@ -65,5 +73,17 @@ export class StaffReservationDetailComponent implements OnInit {
     if (this.reservation && confirm('Annuler cette réservation ?')) {
       this.staffService.cancel(this.reservation.id).subscribe(() => this.load());
     }
+  }
+
+  deletePermanently(): void {
+    if (!this.reservation) return;
+    if (!confirm(`Supprimer définitivement la réservation ${this.reservation.reservation_number} ? Cette action est irréversible.`)) {
+      return;
+    }
+    this.errorMessage = '';
+    this.staffService.deletePermanently(this.reservation.id).subscribe({
+      next: () => this.router.navigate(['/staff/reservations']),
+      error: (err) => (this.errorMessage = err.error?.message ?? 'Suppression impossible.'),
+    });
   }
 }

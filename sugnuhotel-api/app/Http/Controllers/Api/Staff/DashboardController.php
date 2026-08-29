@@ -28,9 +28,13 @@ class DashboardController extends Controller
             ? round(Room::where('status', 'occupied')->count() / Room::count() * 100)
             : 0;
 
+        // Voir le commentaire équivalent dans ReservationController::bookingData() :
+        // on enveloppe explicitement dans ['data' => ...] car ces collections sont
+        // imbriquées dans un tableau manuel, donc l'enveloppement automatique de Laravel
+        // ne s'applique pas ici.
         return response()->json([
-            'arrivals' => ReservationResource::collection($arrivals),
-            'departures' => ReservationResource::collection($departures),
+            'arrivals' => ['data' => ReservationResource::collection($arrivals)],
+            'departures' => ['data' => ReservationResource::collection($departures)],
             'occupancy_rate' => $occupancyRate,
         ]);
     }

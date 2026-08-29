@@ -12,6 +12,8 @@ import { Reservation, ReservationStatus } from '../../../core/models/reservation
   template: `
     <h4 class="mb-3">Toutes les réservations</h4>
 
+    <div class="alert alert-danger py-2" *ngIf="errorMessage">{{ errorMessage }}</div>
+
     <form [formGroup]="filterForm" (ngSubmit)="search()" class="row g-2 mb-3">
       <div class="col-md-4">
         <input type="text" formControlName="q" class="form-control" placeholder="Nom, numéro, chambre...">
@@ -28,7 +30,7 @@ import { Reservation, ReservationStatus } from '../../../core/models/reservation
       <div class="col-md-2"><button class="btn btn-dark w-100">Filtrer</button></div>
     </form>
 
-    <table class="table bg-white shadow-sm">
+    <table class="table bg-white shadow-sm align-middle">
       <thead><tr><th>N°</th><th>Client</th><th>Chambre</th><th>Arrivée</th><th>Départ</th><th>Statut</th><th></th></tr></thead>
       <tbody>
         <tr *ngFor="let r of reservations">
@@ -38,7 +40,16 @@ import { Reservation, ReservationStatus } from '../../../core/models/reservation
           <td>{{ r.check_in_date | date:'dd/MM/yyyy' }}</td>
           <td>{{ r.check_out_date | date:'dd/MM/yyyy' }}</td>
           <td><span class="badge badge-status-{{ r.status }}">{{ r.status }}</span></td>
-          <td><a [routerLink]="['/staff/reservations', r.id]" class="btn btn-sm btn-outline-dark">Voir</a></td>
+          <td class="text-end">
+            <a [routerLink]="['/staff/reservations', r.id]" class="btn btn-sm btn-outline-dark me-1">Voir</a>
+            <!-- Suppression définitive : uniquement visible pour une réservation déjà annulée -->
+            <button *ngIf="r.status === 'cancelled'" class="btn btn-sm btn-outline-danger" (click)="deletePermanently(r)">
+              <i class="fa-solid fa-trash"></i> Supprimer
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="reservations.length === 0">
+          <td colspan="7" class="text-muted text-center py-4">Aucune réservation ne correspond à ces critères.</td>
         </tr>
       </tbody>
     </table>
@@ -47,6 +58,7 @@ import { Reservation, ReservationStatus } from '../../../core/models/reservation
 export class StaffReservationListComponent implements OnInit {
   reservations: Reservation[] = [];
   statuses: ReservationStatus[] = ['pending', 'confirmed', 'checked_in', 'checked_out', 'cancelled'];
+  errorMessage = '';
 
   filterForm = this.fb.group({ q: [''], date: [''], status: [''] });
 
@@ -58,5 +70,16 @@ export class StaffReservationListComponent implements OnInit {
 
   search(): void {
     this.staffService.search(this.filterForm.getRawValue() as any).subscribe((res) => (this.reservations = res.data));
+  }
+
+  deletePermanently(reservation: Reservation): void {
+    if (!confirm(`Supprimer définitivement la réservation ${reservation.reservation_number} ? Cette action est irréversible.`)) {
+      return;
+    }
+    this.errorMessage = '';
+    this.staffService.deletePermanently(reservation.id).subscribe({
+      next: () => this.search(),
+      error: (err) => (this.errorMessage = err.error?.message ?? 'Suppression impossible.'),
+    });
   }
 }

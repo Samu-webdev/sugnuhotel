@@ -32,7 +32,13 @@ class ReservationController extends Controller
     {
         return response()->json([
             'room' => new RoomResource($room->load('roomType')),
-            'services' => ServiceResource::collection(Service::where('is_active', true)->get()),
+            // IMPORTANT : on enveloppe explicitement dans une clé "data", exactement comme le fait
+            // Laravel automatiquement quand un ResourceCollection est renvoyé directement par une route.
+            // Ici, comme la collection est imbriquée dans un tableau manuel (response()->json([...])),
+            // cet enveloppement automatique ne se produit PAS — sans ce ['data' => ...] explicite,
+            // le frontend Angular reçoit un tableau brut au lieu de { data: [...] }, ce qui casse
+            // le rendu de la page de réservation (et donc fait "disparaître" le bouton Réserver).
+            'services' => ['data' => ServiceResource::collection(Service::where('is_active', true)->get())],
         ]);
     }
 

@@ -71,7 +71,8 @@ import { HotelService } from '../../../core/models/service.model';
             </div>
 
             <button class="btn btn-dark btn-lg" [disabled]="form.invalid || submitting">
-              {{ submitting ? 'Envoi...' : 'Confirmer la réservation' }}
+              <i class="fa-solid fa-check me-1" *ngIf="!submitting"></i>
+              {{ submitting ? 'Envoi...' : 'Réserver maintenant' }}
             </button>
           </form>
         </div>

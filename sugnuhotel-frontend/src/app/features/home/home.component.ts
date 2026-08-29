@@ -9,11 +9,15 @@ import { AuthService } from '../../core/services/auth.service';
 // Photos libres de droits (licence Unsplash, réutilisation commerciale autorisée),
 // prises au Sénégal : coucher de soleil à Mbodiène, Lac Rose, Gorée/Dakar.
 const SUNSET_MBODIENE = 'https://images.unsplash.com/photo-1498121957837-60d97c66df4d?w=1600&q=80&auto=format&fit=crop';
-const LAC_ROSE = 'https://images.unsplash.com/photo-1510263491918-15eb421bc6c1?w=1000&q=80&auto=format&fit=crop';
+// Photo libre de droits (licence Unsplash) : vue du littoral/skyline de Dakar depuis la mer.
+// Je n'ai pas trouvé de photo libre de droits identifiée précisément "Sea Plaza" ; celle-ci
+// représente la Corniche de Dakar de façon générale — remplacez l'URL si vous avez une photo
+// officielle de Sea Plaza à utiliser à la place.
+const SEA_PLAZA_CORNICHE = 'https://images.unsplash.com/photo-1621862681248-c891542db4d7?w=1000&q=80&auto=format&fit=crop';
 const GOREE_DAKAR = 'https://images.unsplash.com/photo-1524520120037-c3f28865f644?w=1000&q=80&auto=format&fit=crop';
 
 const ROOM_TYPE_FALLBACKS: Record<string, string> = {
-  Standard: LAC_ROSE,
+  Standard: SEA_PLAZA_CORNICHE,
   Deluxe: GOREE_DAKAR,
   Suite: SUNSET_MBODIENE,
 };
@@ -157,7 +161,7 @@ export class HomeComponent implements OnInit {
 
   gallery = [
     { src: SUNSET_MBODIENE, label: 'Coucher de soleil, Mbodiène' },
-    { src: LAC_ROSE, label: 'Lac Rose' },
+    { src: SEA_PLAZA_CORNICHE, label: 'Sea Plaza, la Corniche' },
     { src: GOREE_DAKAR, label: 'Île de Gorée, Dakar' },
   ];
 
@@ -180,7 +184,7 @@ export class HomeComponent implements OnInit {
   }
 
   fallbackFor(typeName: string): string {
-    return ROOM_TYPE_FALLBACKS[typeName] ?? LAC_ROSE;
+    return ROOM_TYPE_FALLBACKS[typeName] ?? SEA_PLAZA_CORNICHE;
   }
 
   search(): void {
@@ -200,18 +204,31 @@ export class HomeComponent implements OnInit {
   }
 
   reserve(room: Room): void {
+    const checkIn = this.lastCriteria['check_in_date' as keyof typeof this.lastCriteria] ?? this.searchForm.value.check_in_date;
+    const checkOut = this.searchForm.value.check_out_date;
+    const adults = this.lastCriteria.adults;
+    const children = this.lastCriteria.children;
+
     if (!this.auth.isLoggedIn()) {
-      this.router.navigate(['/login']);
+      // Un visiteur qui veut réserver n'a probablement pas encore de compte : on l'envoie
+      // directement vers la création de compte (plutôt que la connexion) pour lui faire gagner
+      // une étape. "returnUrl" + les critères de recherche sont conservés en query params afin
+      // que RegisterComponent puisse le renvoyer exactement là où il voulait aller une fois inscrit.
+      this.router.navigate(['/register'], {
+        queryParams: {
+          returnUrl: `/rooms/${room.id}/reserve`,
+          check_in_date: checkIn,
+          check_out_date: checkOut,
+          adults,
+          children,
+        },
+      });
       return;
     }
+
     // On transmet les critères de recherche en query params pour préremplir le formulaire de réservation
     this.router.navigate(['/rooms', room.id, 'reserve'], {
-      queryParams: {
-        check_in_date: this.lastCriteria['check_in_date' as keyof typeof this.lastCriteria] ?? this.searchForm.value.check_in_date,
-        check_out_date: this.searchForm.value.check_out_date,
-        adults: this.lastCriteria.adults,
-        children: this.lastCriteria.children,
-      },
+      queryParams: { check_in_date: checkIn, check_out_date: checkOut, adults, children },
     });
   }
 }

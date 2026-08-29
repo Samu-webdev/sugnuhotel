@@ -63,6 +63,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/reservations/{reservation}', [StaffReservationController::class, 'show']);
         Route::put('/reservations/{reservation}', [StaffReservationController::class, 'update']);
         Route::delete('/reservations/{reservation}', [StaffReservationController::class, 'destroy']);
+        // Suppression définitive, réservée aux réservations déjà annulées (bouton "Supprimer" dans l'UI staff)
+        Route::delete('/reservations/{reservation}/force', [StaffReservationController::class, 'forceDelete']);
         Route::patch('/reservations/{reservation}/check-in', [StaffReservationController::class, 'checkIn']);
         Route::patch('/reservations/{reservation}/check-out', [StaffReservationController::class, 'checkOut']);
     });
